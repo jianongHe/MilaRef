@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import SvgIcon from "./components/SvgIcon.vue";
+</script>
 
 <template>
   <div ref="view" class="container" @mouseup="handleMouseUp">
@@ -6,28 +8,28 @@
       <div class="bar" @mousedown="handleMouseDown">
         <div class="buttons">
           <div class="button">
-            <img class="icon" @click="handleClose" src="./assets/icons/close.svg" />
+            <svg-icon class="icon" @click="handleClose" name="close" />
           </div>
           <div class="button">
-            <img class="icon" @click="handleMinimize" src="./assets/icons/minimize.svg" />
+            <svg-icon @click="handleMinimize" class="icon" name="minimize" />
           </div>
-          <div v-if="!isFullScreen" class="button">
-            <img class="icon to-full" @click="handleMaximize" src="./assets/icons/maximize-2.svg" />
+          <div class="button" v-if="!isFullScreen">
+            <svg-icon  @click="handleMaximize" class="icon to-full" name="to-full" />
           </div>
-          <div v-if="isFullScreen" class="button">
-            <img class="icon to-win" @click="handleMaximize" src="./assets/icons/minimize-1.svg" />
+          <div class="button" v-else>
+            <svg-icon v-if="isFullScreen" @click="handleMaximize" class="icon to-win" name="to-win" />
           </div>
           <div class="button" v-if="!pin">
-            <img class="icon pin" @click="handlePin" src="./assets/icons/pin.svg" />
+            <svg-icon  @click="handlePin" class="icon pin" name="pin" />
           </div>
-          <div class="button" v-if="pin">
-            <img class="icon pin" @click="handlePin" src="./assets/icons/pin_slash.svg" />
+          <div class="button" v-else>
+            <svg-icon  @click="handlePin" class="icon pin" name="pin_slash" />
           </div>
         </div>
         <div class="draggable"></div>
       </div>
     </div>
-    <webview id="webview" ref="webview" :src="url" allowpopups @mouseenter="handleMouseEnterMain" @mouseleave="handleMouseLeaveMain"></webview>
+    <webview id="webview" ref="webview" :src="url" allowpopups @mouseenter="handleMouseEnterMain" @mouseleave="handleMouseLeaveMain" />
   </div>
 
 </template>
@@ -49,10 +51,6 @@ export default {
     }
   },
   mounted() {
-
-    window.electronAPI.onMenuTouching((touching) => {
-      this.touchingMenu = touching
-    })
 
     const webview = this.$refs.webview;
 
@@ -125,31 +123,22 @@ export default {
       }, 1000)
     },
     handleMinimize() {
-      console.log('handleMinimize')
       IPC.ipcMinimizeWindow()
     },
     handleMaximize() {
-      console.log('handleMaximize')
       this.isFullScreen = !this.isFullScreen
       IPC.ipcMaximizeWindow(this.isFullScreen)
     },
     handleClose() {
-      console.log('handleClose')
       IPC.ipcCloseWindow()
     },
     handlePin() {
-      console.log('handlePin')
       this.pin = !this.pin
       IPC.ipcPinWindow(this.pin)
     },
 
   },
 }
-// 必须要检测到鼠标移入和移除menu的事件，这样才可以激活动画 ❌
-// 要么就检测没有移出window且 鼠标没有在空余区域？ ❌
-// 用js来计算？鼠标的xy
-
-
 </script>
 
 <style scoped>
@@ -180,7 +169,31 @@ export default {
       position: absolute;
       top: 0px;
       opacity: 0;
-      background: gray;
+      backdrop-filter: blur(6px);
+
+      @media (prefers-color-scheme: dark) {
+        border-bottom: 1px solid #888888;
+        .button {
+          .icon:deep(svg) {
+            color: white;
+          }
+          &:before {
+            background: rgba(206, 206, 206, 0.42);
+          }
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        border-bottom: 1px solid #d9d9d9;
+        .button {
+          .icon:deep(svg) {
+            color: black;
+          }
+          &:before {
+            background: rgba(129, 129, 129, 0.42);
+          }
+        }
+      }
 
       .buttons {
         display: flex;
@@ -191,17 +204,17 @@ export default {
           position: relative;
           margin: 3px;
           width: 20px;
-          height: 100%;
+          height: 20px;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: default;
+          transform: none;
 
           .icon {
             position: relative;
             width: 100%;
             height: 100%;
-            color: white;
             &.to-full {
               transform: scale(0.7);
             }
@@ -211,17 +224,20 @@ export default {
             &.pin {
               transform: scale(0.7);
             }
+            &:deep(svg) {
+              width: 100%;
+              height: 100%;
+            }
           }
           &:before {
             content: '';
             position: absolute;
             height: 20px;
             width: 20px;
-            background: rgba(206, 206, 206, 0.42);
             border-radius: 5px;
             transition: opacity 0.3s ease;
-
             opacity: 0;
+            transform: none;
           }
           &:hover::before {
             opacity: 1;

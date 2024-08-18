@@ -1,4 +1,4 @@
-import { app, BrowserWindow, webContents, shell, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray } from 'electron';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import path from "node:path";
@@ -9,6 +9,8 @@ let windowState = {}; // 用于存储窗口状态
 
 function createWindow() {
     console.log('env:', process.env.NODE_ENV)
+
+    const tray = new Tray(path.join(__dirname, '/assets/logo.png'))
 
     const mainWindow = new BrowserWindow({
         width: 800,
@@ -82,6 +84,7 @@ function createWindow() {
     })
 
     mainWindow.loadURL('http://localhost:5173');
+    // mainWindow.loadFile(join(__dirname, '../dist/index.html'));
 
     // if (process.env.NODE_ENV === 'development') {
     //     mainWindow.loadURL('http://localhost:5173');
@@ -89,6 +92,8 @@ function createWindow() {
     //     mainWindow.loadFile(join(__dirname, '../dist/index.html'));
     // }
 }
+
+app.setName('WebRef')
 
 app.on('ready', createWindow);
 
