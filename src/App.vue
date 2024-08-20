@@ -78,6 +78,8 @@ export default {
 
       this.webview = webview
 
+      IPC.ipcWebviewReady(webview.getWebContentsId())
+
     });
 
   },
@@ -95,7 +97,7 @@ export default {
         return
       }
 
-      IPC.ipcDump('START LISTENER')
+      IPC.ipcDump('START MENU LISTENER')
 
       this.mouseListener = setInterval(async () => {
         const point = await IPC.ipcGetMousePosition()
@@ -118,7 +120,7 @@ export default {
       }
 
       this.debounce = setTimeout(() => {
-        IPC.ipcDump('CLEAR LISTENER')
+        IPC.ipcDump('CLEAR MENU LISTENER')
         clearInterval(this.mouseListener)
         this.mouseListener = null
         this.touchingMenu = false
@@ -129,6 +131,7 @@ export default {
     },
     handleMaximize() {
       this.isFullScreen = !this.isFullScreen
+      IPC.ipcDump('MMMMMMMMMAX')
       IPC.ipcMaximizeWindow(this.isFullScreen)
     },
     handleClose() {
@@ -136,6 +139,8 @@ export default {
       IPC.ipcCloseWindow()
     },
     handlePin() {
+      IPC.ipcDump('PPPPPPPPPIN')
+
       this.pin = !this.pin
       IPC.ipcPinWindow(this.pin)
     },

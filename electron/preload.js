@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcGetMenuSection: (height) => ipcRenderer.invoke('get-menu-section', height),
     ipcToggleTrafficLight: (flag) => ipcRenderer.send('toggle-traffic-light', flag),
     ipcOnToggleToolBar: (callback) => ipcRenderer.on('toggle-tool-bar', (_event, value) => callback(value)),
+    ipcWebviewReady: (id) => ipcRenderer.send('webview-ready', id),
 })
