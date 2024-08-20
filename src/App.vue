@@ -1,92 +1,94 @@
-<script setup>
-import SvgIcon from "./components/SvgIcon.vue";
-</script>
-
 <template>
-  <div ref="view" class="container" @mouseup="handleMouseUp">
+  <div ref="view" class="container">
     <div class="menu" :class="{touchingMenu}" ref="menu" @mouseenter="handleMouseEnterMenu" @mouseleave="handleMouseLeaveMenu">
-      <div class="bar" @mousedown="handleMouseDown">
-        <div class="buttons">
-          <div class="button">
-            <svg-icon class="icon" @click="handleClose" name="close" />
+      <div class="bar">
+        <div class="operations">
+          <div class="button" @click="handleClose">
+            <svg-icon class="icon" name="close" />
           </div>
-          <div class="button">
-            <svg-icon @click="handleMinimize" class="icon" name="minimize" />
+          <div class="button" @click="handleMinimize">
+            <svg-icon class="icon" name="minimize" />
           </div>
-          <div class="button" v-if="!isFullScreen">
-            <svg-icon  @click="handleMaximize" class="icon to-full" name="to-full" />
+          <div class="button" v-if="!isFullScreen" @click="handleMaximize">
+            <svg-icon  class="icon to-full" name="to-full" />
           </div>
-          <div class="button" v-else>
-            <svg-icon v-if="isFullScreen" @click="handleMaximize" class="icon to-win" name="to-win" />
+          <div class="button" v-else @click="handleMaximize">
+            <svg-icon v-if="isFullScreen" class="icon to-win" name="to-win" />
           </div>
-          <div class="button" v-if="!pin">
-            <svg-icon  @click="handlePin" class="icon pin" name="pin" />
+          <div class="button" v-if="!pin" @click="handlePin">
+            <svg-icon class="icon pin" name="pin" />
           </div>
-          <div class="button" v-else>
-            <svg-icon  @click="handlePin" class="icon pin" name="pin_slash" />
+          <div class="button" v-else @click="handlePin">
+            <svg-icon class="icon pin" name="pin_slash" />
+          </div>
+          <div class="slider">
+            <n-slider :tooltip="false" v-model:value="transparent">
+              <template #thumb>
+                <svg-icon class="icon opacity" name="opacity" />
+              </template>
+            </n-slider>
           </div>
         </div>
         <div class="draggable"></div>
       </div>
     </div>
-    <webview id="webview" ref="webview" :src="url" allowpopups @mouseenter="handleMouseEnterMain" @mouseleave="handleMouseLeaveMain" />
-  </div>
 
+    <webview id="webview" class="webview" ref="webview" :src="url" :style="containerStyle" allowpopups @mouseenter="handleMouseEnterMain" @mouseleave="handleMouseLeaveMain" />
+  </div>
 </template>
 
 <script>
+import { NSlider } from 'naive-ui'
+import SvgIcon from "./components/SvgIcon.vue";
+import { MilaNoteStyleInjectionMixin } from "./mixins/MilanoteStyleInjection.js";
 
 const IPC = window.electronAPI;
 
 export default {
   name: 'App',
+  mixins: [MilaNoteStyleInjectionMixin],
+  components: {
+    SvgIcon,
+    NSlider
+  },
   data() {
     return {
+      webview: null,
       pin: false,
       touchingMenu: false,
       url: 'https://app.milanote.com',
       mouseListener: null,
       debounce: null,
       isFullScreen: false,
+      transparent: 100,
+    }
+  },
+  computed: {
+    containerStyle() {
+      return {
+        opacity: this.transparent / 100
+      }
     }
   },
   mounted() {
 
     const webview = this.$refs.webview;
 
-    webview.addEventListener('did-finish-load', (event) => {
-      // console.log('did-finish-load', event);
+    webview.addEventListener('dom-ready', (event) => {
+
+      this.webview = webview
+
     });
-    webview.addEventListener('will-navigate', (event) => {
-      // console.log('will-navigate', event);
-    });
-    webview.addEventListener('did-navigate-in-page', (event) => {
-      // console.log('did-navigate-in-page', event);
-    });
-    webview.addEventListener('will-frame-navigate', (event) => {
-      // console.log('will-frame-navigate', event);
-    });
-    webview.addEventListener('did-navigate', (event) => {
-      // console.log('did-navigate', event);
-    });
+
   },
   methods: {
-    handleMouseEnterMain() {
-      console.log('handleMouseEnterMain')
-      this.clearMenuListener()
-    },
-    handleMouseLeaveMain() {
-      // console.log('handleMouseLeaveMain')
-    },
-    handleMouseDown() {
-      console.log('handleMouseDown')
-    },
-    handleMouseUp() {
-      console.log('handleMouseUp')
-    },
+
     handleMouseEnterMenu() {
       this.touchingMenu = true
       this.startListenerForTouchingMenu()
+    },
+    handleMouseEnterMain() {
+      this.clearMenuListener()
     },
     async startListenerForTouchingMenu() {
       if (this.mouseListener) {
@@ -130,6 +132,7 @@ export default {
       IPC.ipcMaximizeWindow(this.isFullScreen)
     },
     handleClose() {
+      console.log('close')
       IPC.ipcCloseWindow()
     },
     handlePin() {
@@ -145,6 +148,7 @@ export default {
 .container {
   height: 100vh;
   width: 100vw;
+  background: transparent;
 
   .menu {
     position: fixed;
@@ -173,10 +177,10 @@ export default {
 
       @media (prefers-color-scheme: dark) {
         border-bottom: 1px solid #888888;
+        .icon:deep(svg) {
+          color: white;
+        }
         .button {
-          .icon:deep(svg) {
-            color: white;
-          }
           &:before {
             background: rgba(206, 206, 206, 0.42);
           }
@@ -185,20 +189,43 @@ export default {
 
       @media (prefers-color-scheme: light) {
         border-bottom: 1px solid #d9d9d9;
+        .icon:deep(svg) {
+          color: black;
+        }
         .button {
-          .icon:deep(svg) {
-            color: black;
-          }
           &:before {
             background: rgba(129, 129, 129, 0.42);
           }
         }
       }
 
-      .buttons {
+      .operations {
         display: flex;
         justify-content: space-between;
         align-items: center;
+
+        .icon {
+          width: 100%;
+          height: 100%;
+          &.to-full {
+            transform: scale(0.7);
+          }
+          &.to-win {
+            transform: scale(0.8);
+          }
+          &.pin {
+            transform: scale(0.7);
+          }
+          &.opacity {
+            width: 20px;
+            height: 20px;
+            transform: scale(0.9);
+          }
+          &:deep(svg) {
+            width: 100%;
+            height: 100%;
+          }
+        }
 
         .button {
           position: relative;
@@ -211,24 +238,7 @@ export default {
           cursor: default;
           transform: none;
 
-          .icon {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            &.to-full {
-              transform: scale(0.7);
-            }
-            &.to-win {
-              transform: scale(0.8);
-            }
-            &.pin {
-              transform: scale(0.7);
-            }
-            &:deep(svg) {
-              width: 100%;
-              height: 100%;
-            }
-          }
+
           &:before {
             content: '';
             position: absolute;
@@ -241,6 +251,13 @@ export default {
           }
           &:hover::before {
             opacity: 1;
+          }
+        }
+
+        .slider {
+          width: 50px;
+          &:deep(.n-slider-rail__fill) {
+            background-color: #888888;
           }
         }
       }
@@ -273,11 +290,9 @@ export default {
 
   }
 
-  webview {
+  .webview {
     height: 100vh;
     width: 100vw;
   }
 }
-
-
 </style>

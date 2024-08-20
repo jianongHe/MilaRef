@@ -3,9 +3,24 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
+    name: 'MilaRef',
     asar: true,
+    appCategoryType: 'public.app-category.developer-tools'
   },
   rebuildConfig: {},
+  publishers: [
+    {
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'HeJiaNong',
+          name: 'WebRef'
+        },
+        prerelease: false,
+        draft: true
+      }
+    }
+  ],
   makers: [
     {
       name: '@electron-forge/maker-squirrel',

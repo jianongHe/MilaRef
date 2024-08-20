@@ -1,32 +1,50 @@
-import { app, BrowserWindow, shell, ipcMain, screen, Tray } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, screen, Tray, globalShortcut, nativeImage, Menu } from 'electron';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import path from "node:path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+console.log('FILENAME', __dirname)
+
 let windowState = {}; // 用于存储窗口状态
+const appIcon = nativeImage.createFromPath(path.join(__dirname, '/assets/logo.png'))
+const isMouseInWindow = window => {
+    const mousePosition = screen.getCursorScreenPoint();
+    const windowPosition = window.getPosition();
+    const windowSize = window.getSize();
+
+    const xInWindow = mousePosition.x >= windowPosition[0] && mousePosition.x <= (windowPosition[0] + windowSize[0]);
+    const yInWindow = mousePosition.y >= windowPosition[1] && mousePosition.y <= (windowPosition[1] + windowSize[1]);
+
+    return xInWindow && yInWindow;
+}
 
 function createWindow() {
     console.log('env:', process.env.NODE_ENV)
-
-    const tray = new Tray(path.join(__dirname, '/assets/logo.png'))
 
     const mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         frame: false,
+        icon: appIcon,
         acceptFirstMouse: true,
         roundedCorners: false,
         transparent: true,
-        titleBarStyle: 'hiddenInset', // 使用隐藏的标题栏，但保留交通灯按钮
+        titleBarStyle: 'hidden',
+        // titleBarStyle: 'hiddenInset', // 使用隐藏的标题栏，但保留交通灯按钮
         webPreferences: {
             webviewTag: true,
             preload: path.join(__dirname, 'preload.js')
         },
     });
 
-    mainWindow.setWindowButtonVisibility(true); // 显示交通灯按钮
+    globalShortcut.register('Tab', () => {
+        if (isMouseInWindow(mainWindow)) {
+            mainWindow.webContents.send('toggle-tool-bar')
+        }
+    })
+
     mainWindow.setFullScreenable(true)
 
     mainWindow.on('enter-full-screen', () => {
@@ -41,11 +59,16 @@ function createWindow() {
         console.log(value)
     })
 
+    ipcMain.on('toggle-traffic-light', (event, value) => {
+        mainWindow.setWindowButtonVisibility(value); // 显示交通灯按钮
+    })
+
     ipcMain.on('pin-window', (event, shouldPin) => {
         mainWindow.setAlwaysOnTop(shouldPin)
     })
 
     ipcMain.on('close-window', () => {
+        console.log('CLOSE WINDOW')
         mainWindow.close()
     })
 
@@ -95,7 +118,27 @@ function createWindow() {
 
 app.setName('WebRef')
 
-app.on('ready', createWindow);
+const dockMenu = Menu.buildFromTemplate([
+    {
+        label: 'New Window',
+        click () { console.log('New Window'); createWindow() }
+    }, {
+        label: 'New Window with Settings',
+        submenu: [
+            { label: 'Basic' },
+            { label: 'Pro' }
+        ]
+    },
+    { label: 'New Command...' }
+])
+
+
+app.whenReady().then(() => {
+    if (process.platform === 'darwin') {
+        app.dock.setMenu(dockMenu)
+        app.dock.setIcon(appIcon)
+    }
+}).then(createWindow)
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

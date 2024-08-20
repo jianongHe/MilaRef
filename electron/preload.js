@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcMaximizeWindow: (flag) => ipcRenderer.send('maximize-window', flag),
     ipcGetMousePosition: () => ipcRenderer.invoke('get-mouse-position'),
     ipcGetMenuSection: (height) => ipcRenderer.invoke('get-menu-section', height),
+    ipcToggleTrafficLight: (flag) => ipcRenderer.send('toggle-traffic-light', flag),
+    ipcOnToggleToolBar: (callback) => ipcRenderer.on('toggle-tool-bar', (_event, value) => callback(value)),
 })
