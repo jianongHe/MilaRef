@@ -6,13 +6,15 @@ const hideToolbarKey = Symbol()
 const toolbarFloatingKey = Symbol()
 const viewportKey = Symbol()
 const minifyToolbar = Symbol()
+const showHeaderWhenHover = Symbol()
 
 const CSSInjections = {
     [hideHeaderKey]: 'header.AppHeader{display: none;}',
     [hideToolbarKey]: '#toolbar{display: none}',
+    [showHeaderWhenHover]: 'header.AppHeader:hover{opacity: 1}',
     // [minifyToolbar]: '.ElementToolDraggable {width: 20px;} .tool-list{width: 30px;}',
     [minifyToolbar]: '',
-    [viewportKey]: '#canvas-viewport{scrollbar-width: none;}',
+    [viewportKey]: '#canvas-viewport{scrollbar-width: none;}    .WorkspaceToolsHeader{}',
     [headerFloatingKey]: 'header.AppHeader{position: absolute; top: 30px; width: 100%;}',
     [toolbarFloatingKey]: '#toolbar{position: absolute; top: 180px; left: 0;}',
 }

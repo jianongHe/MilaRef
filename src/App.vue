@@ -33,7 +33,17 @@
       </div>
     </div>
 
-    <webview id="webview" class="webview" ref="webview" :src="url" :style="containerStyle" allowpopups @mouseenter="handleMouseEnterMain" @mouseleave="handleMouseLeaveMain" />
+    <webview
+        id="webview"
+        ref="webview"
+        class="webview"
+        :src="url"
+        :style="containerStyle"
+        :partition="sessionPartition"
+        allowpopups
+        @mouseenter="handleMouseEnterMain"
+        webpreferences="allowRunningInsecureContent, webSecurity=0"
+    />
   </div>
 </template>
 
@@ -68,6 +78,9 @@ export default {
       return {
         opacity: this.transparent / 100
       }
+    },
+    sessionPartition() {
+      return 'persist:milanote'
     }
   },
   mounted() {
@@ -131,7 +144,6 @@ export default {
     },
     handleMaximize() {
       this.isFullScreen = !this.isFullScreen
-      IPC.ipcDump('MMMMMMMMMAX')
       IPC.ipcMaximizeWindow(this.isFullScreen)
     },
     handleClose() {
@@ -139,8 +151,6 @@ export default {
       IPC.ipcCloseWindow()
     },
     handlePin() {
-      IPC.ipcDump('PPPPPPPPPIN')
-
       this.pin = !this.pin
       IPC.ipcPinWindow(this.pin)
     },

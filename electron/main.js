@@ -7,7 +7,8 @@ import {
     Tray,
     nativeImage,
     Menu,
-    webContents
+    webContents,
+    session
 } from 'electron';
 import {fileURLToPath} from 'url';
 import {dirname, join} from 'path';
@@ -16,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 console.log('FILENAME', __dirname)
 
-let windowState = {}; // 用于存储窗口状态
+const windowState = {}
 const appIcon = nativeImage.createFromPath(join(__dirname, '/assets/logo.png'))
 
 const findWindow = (event) => {
@@ -27,8 +28,8 @@ function createWindow() {
     console.log('env:', process.env.NODE_ENV)
 
     const window = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 800,
         frame: false,
         icon: appIcon,
         show: false,
@@ -43,7 +44,9 @@ function createWindow() {
             webviewTag: true,
             preload: join(__dirname, 'preload.js'),
             scrollBounce: true,
-            devTools: true
+            devTools: true,
+            session: session.fromPartition('persist:WebRef'),
+            partition: 'persist:WebRef'
         },
     });
 
@@ -92,14 +95,13 @@ app.setName('WebRef')
 app.whenReady()
     .then(() => {
         if (process.platform === 'darwin') {
-            app.dock.setMenu(Menu.buildFromTemplate([{
-                label: 'New Window', click() {
-                    createWindow()
-                }
-            }, {
-                label: 'New Window with Settings', submenu: [{label: 'Basic'}, {label: 'Pro'}]
-            }, {label: 'New Command...'}]))
             app.dock.setIcon(appIcon)
+            app.dock.setMenu(Menu.buildFromTemplate([
+                {
+                    label: 'New Window',
+                    click: createWindow
+                }
+            ]))
         }
     })
     .then(() => {
@@ -133,6 +135,14 @@ app.whenReady()
                 const webviewContents = webContents.fromId(id);
                 const currentWindow = findWindow(event)
 
+
+                console.log('Webview ready')
+
+                // webviewContents.executeJavaScript(`fetch("https://jsonplaceholder.typicode.com/users/1").then(resp => JSON.stringify(window))`).then(result => {
+                //     console.log('executeJavaScript')
+                //     console.log(result)
+                // })
+
                 webviewContents.on('before-input-event', (event, input) => {
                     if (input.key !== 'Tab') return
                     currentWindow.webContents.send('toggle-tool-bar')
@@ -155,6 +165,7 @@ app.whenReady()
                 const currentWindow = findWindow(event)
 
                 if (isFull) {
+                    currentWindow.setBounds(currentWindow.getBounds());
                     windowState[currentWindow.id] = currentWindow.getBounds();
                     currentWindow.setSimpleFullScreen(isFull)
                     return;
