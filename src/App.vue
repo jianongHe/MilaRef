@@ -1,6 +1,6 @@
 <template>
   <div ref="view" class="container">
-    <div class="menu" :class="{touchingMenu}" ref="menu" @mouseenter="handleMouseEnterMenu" @mouseleave="handleMouseLeaveMenu">
+    <div class="menu" :class="{touchingMenu, showToolBar: !showToolBar}" :style="{height: `${menuHeight}px`}" ref="menu" @mouseenter="handleMouseEnterMenu" @mouseleave="handleMouseLeaveMenu">
       <div class="bar">
         <div class="operations">
           <div class="button" @click="handleClose">
@@ -40,9 +40,8 @@
         :src="url"
         :style="containerStyle"
         :partition="sessionPartition"
-        allowpopups
         @mouseenter="handleMouseEnterMain"
-        webpreferences="allowRunningInsecureContent, webSecurity=0"
+        allowpopups
     />
   </div>
 </template>
@@ -63,6 +62,7 @@ export default {
   },
   data() {
     return {
+      menuHeight: 30,
       webview: null,
       pin: false,
       touchingMenu: false,
@@ -93,6 +93,11 @@ export default {
 
       IPC.ipcWebviewReady(webview.getWebContentsId())
 
+      webview.addEventListener('console-message', (e) => {
+        IPC.ipcDump('==========CONSOLE-MESSAGE:')
+        IPC.ipcDump(e.message)
+      })
+
     });
 
   },
@@ -110,11 +115,9 @@ export default {
         return
       }
 
-      IPC.ipcDump('START MENU LISTENER')
-
       this.mouseListener = setInterval(async () => {
         const point = await IPC.ipcGetMousePosition()
-        const menuSection = await IPC.ipcGetMenuSection(30)
+        const menuSection = await IPC.ipcGetMenuSection(this.menuHeight)
 
         const isInMenuX = point.x > menuSection.xStart && point.x < menuSection.xEnd
         const isInMenuY = point.y > menuSection.yStart && point.y < menuSection.yEnd
@@ -133,7 +136,6 @@ export default {
       }
 
       this.debounce = setTimeout(() => {
-        IPC.ipcDump('CLEAR MENU LISTENER')
         clearInterval(this.mouseListener)
         this.mouseListener = null
         this.touchingMenu = false
@@ -147,7 +149,6 @@ export default {
       IPC.ipcMaximizeWindow(this.isFullScreen)
     },
     handleClose() {
-      console.log('close')
       IPC.ipcCloseWindow()
     },
     handlePin() {
@@ -167,7 +168,6 @@ export default {
 
   .menu {
     position: fixed;
-    height: 30px;
     top: 0;
     left: 0;
     width: 100%;
@@ -297,6 +297,17 @@ export default {
         transition-delay: 0s;
         opacity: 1;
 
+        .draggable {
+          -webkit-app-region: drag;
+        }
+      }
+    }
+
+    &.showToolBar {
+      .bar {
+        background-color: #333333;
+        transition-delay: 0s;
+        opacity: 1;
         .draggable {
           -webkit-app-region: drag;
         }

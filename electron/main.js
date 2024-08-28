@@ -28,8 +28,8 @@ function createWindow() {
     console.log('env:', process.env.NODE_ENV)
 
     const window = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 800,
+        height: 600,
         frame: false,
         icon: appIcon,
         show: false,
@@ -46,7 +46,10 @@ function createWindow() {
             scrollBounce: true,
             devTools: true,
             session: session.fromPartition('persist:WebRef'),
-            partition: 'persist:WebRef'
+            partition: 'persist:WebRef',
+            // nodeIntegration: true,
+            // nodeIntegrationInSubFrames: true,
+            // contextIsolation: false
         },
     });
 
@@ -116,7 +119,6 @@ app.whenReady()
 
             if (!currentWindow) {
                 return
-                throw Error('Could not find current Window')
             }
 
             return {
@@ -135,22 +137,61 @@ app.whenReady()
                 const webviewContents = webContents.fromId(id);
                 const currentWindow = findWindow(event)
 
+                // 保存上一次的高度值
+                let lastHeight = null
 
-                console.log('Webview ready')
+                const generateCodeForListenerHeaderHeight = () => `
+(function() {
+    return new Promise((resolve) => {
+        // 创建observer
+        const observer = new MutationObserver(() => {
+            const header = document.querySelector('header.AppHeader');
+            
+            if (header) {
+                const height = header.offsetHeight;
+                console.log('old height', ${lastHeight})
+                console.log('new height', height)
+                console.log(height !== ${lastHeight})
+                if (height !== ${lastHeight}) {
+                    observer.disconnect(); // 停止当前的监听器
+                    resolve(height); // 返回新的高度值
+                }
+            }
+        });
 
-                // webviewContents.executeJavaScript(`fetch("https://jsonplaceholder.typicode.com/users/1").then(resp => JSON.stringify(window))`).then(result => {
-                //     console.log('executeJavaScript')
-                //     console.log(result)
-                // })
+        // 设置监听，观察 DOM 变化
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+})();
+                `
+
+                const startListenerForHeaderHeight = () => {
+                    webviewContents.executeJavaScript(generateCodeForListenerHeaderHeight())
+                        .then(height => {
+                            lastHeight = height
+                            currentWindow.webContents.send('change-header-height', height);
+                            startListenerForHeaderHeight()
+                        })
+                        .catch(error => {
+                            console.error('Error in listening for header height:', error);
+                        });
+                }
+
+                startListenerForHeaderHeight()
 
                 webviewContents.on('before-input-event', (event, input) => {
                     if (input.key !== 'Tab') return
+
                     currentWindow.webContents.send('toggle-tool-bar')
                     event.preventDefault()
                 });
             })
+            .on('header-height-changed', (event, newHeight) => {
+                console.log('Received new header height from renderer:', newHeight);
+                // 在这里你可以执行任何需要的操作，比如保存高度值或更新UI
+            })
             .on('toggle-traffic-light', (event, value) => {
-                findWindow(event).setWindowButtonVisibility(value); // 显示交通灯按钮
+                findWindow(event).setWindowButtonVisibility(value);
             })
             .on('pin-window', (event, shouldPin) => {
                 findWindow(event).setAlwaysOnTop(shouldPin)
