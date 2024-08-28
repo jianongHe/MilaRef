@@ -5,7 +5,8 @@ module.exports = {
   packagerConfig: {
     name: 'MilaRef',
     asar: true,
-    appCategoryType: 'public.app-category.developer-tools'
+    appCategoryType: 'public.app-category.productivity',
+    icon: './electron/assets/logo-256x256.icns',
   },
   rebuildConfig: {},
   publishers: [

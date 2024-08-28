@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 console.log(isDev ? 'Running in development' : 'Running in production');
 
 const windowState = {}
-const appIcon = nativeImage.createFromPath(join(__dirname, '/assets/logo.png'))
+const appIcon = nativeImage.createFromPath(join(__dirname, '/assets/logo-500x500.png'))
 
 const findWindow = (event) => {
     return BrowserWindow.fromWebContents(event.sender)
