@@ -12,10 +12,12 @@ import {
 } from 'electron';
 import {fileURLToPath} from 'url';
 import {dirname, join} from 'path';
+import isDev from 'electron-is-dev';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-console.log('FILENAME', __dirname)
+
+console.log(isDev ? 'Running in development' : 'Running in production');
 
 const windowState = {}
 const appIcon = nativeImage.createFromPath(join(__dirname, '/assets/logo.png'))
@@ -25,7 +27,6 @@ const findWindow = (event) => {
 }
 
 function createWindow() {
-    console.log('env:', process.env.NODE_ENV)
 
     const window = new BrowserWindow({
         width: 800,
@@ -53,6 +54,10 @@ function createWindow() {
         },
     });
 
+    windowState[window.id] = {
+        pin: false,
+        bounds: {}
+    }
     console.log('CREATED NEW WINDOW:', window.id);
 
     window.setFullScreenable(true)
@@ -63,10 +68,10 @@ function createWindow() {
             window.setBackgroundColor('rgba(0, 0, 0, 0)')
         })
         .on('enter-full-screen', () => {
-            windowState[window.id] = window.getBounds();
+            windowState[window.id].bounds = window.getBounds();
         })
         .on('leave-full-screen', () => {
-            window.setBounds(windowState[window.id]);
+            window.setBounds(windowState[window.id].bounds);
         })
         .on('focus', () => {
             window.webContents.on('before-input-event', (event, input) => {
@@ -80,17 +85,12 @@ function createWindow() {
         })
         .on('closed', () => {
             // todo do something when globally detected it's closed
-            delete windowState[window.id]
+            delete windowState[window.id].bounds
         })
 
-    window.loadURL('http://localhost:5173');
-    // window.loadFile(join(__dirname, '../dist/index.html'));
-
-    // if (process.env.NODE_ENV === 'development') {
-    //     window.loadURL('http://localhost:5173');
-    // } else {
-    //     window.loadFile(join(__dirname, '../dist/index.html'));
-    // }
+    isDev
+        ? window.loadURL('http://localhost:5173')
+        : window.loadFile(join(__dirname, '../dist/index.html'))
 }
 
 app.setName('MilaRef')
@@ -194,6 +194,8 @@ app.whenReady()
                 findWindow(event).setWindowButtonVisibility(value);
             })
             .on('pin-window', (event, shouldPin) => {
+                const currentWindow = findWindow(event)
+                windowState[currentWindow.id].pin = shouldPin
                 findWindow(event).setAlwaysOnTop(shouldPin)
             })
             .on('close-window', (event) => {
@@ -207,13 +209,14 @@ app.whenReady()
 
                 if (isFull) {
                     currentWindow.setBounds(currentWindow.getBounds());
-                    windowState[currentWindow.id] = currentWindow.getBounds();
+                    windowState[currentWindow.id].bounds = currentWindow.getBounds();
                     currentWindow.setSimpleFullScreen(isFull)
                     return;
                 }
 
                 currentWindow.setSimpleFullScreen(isFull)
-                currentWindow.setBounds(windowState[currentWindow.id], true);
+                currentWindow.setBounds(windowState[currentWindow.id].bounds, true);
+                currentWindow.setAlwaysOnTop(windowState[currentWindow.id]?.pin || false)
             })
     })
 
