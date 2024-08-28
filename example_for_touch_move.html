@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+        }
+        /* 最外层容器 */
+        #content {
+            /* 阻止页面大小随着SVG移动而变化 */
+            overflow: hidden;
+        }
+        /* 固定Header */
+        #header {
+            left: 0;
+            right: 0;
+            position: fixed;
+            height: 50px!important;
+            background-color: rgb(124, 252, 45);
+            z-index: 10;
+        }
+        /* 容纳需要跟随手势移动的SVG的容器 */
+        #panel_container {
+            height: 100vh;
+            z-index: 5;
+            background-color: rgb(248, 213, 98);
+        }
+        /* 固定Footer */
+        #footer {
+            left: 0;
+            right: 0;
+            bottom: 0;
+            position: fixed;
+            height: 50px!important;
+            background-color: rgb(124, 252, 45);
+            z-index: 10;
+        }
+        /* 需要跟随手势移动的SVG */
+        svg {
+            background-color: rgb(250, 250, 153);
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script>
+        // 需要跟随手势移动的SVG。页面加载后赋值
+        var svg = null;
+
+        // 用户操作后期望的SVG缩放比例
+        var scale = 1;
+        // 用户操作后期望的SVG中心点的横向偏移
+        var posX = 0;
+        // 用户操作后期望的SVG中心点的纵向偏移
+        var posY = 0;
+        // 我们不希望SVG比例过小或偏出屏幕，所以在SVG被移动或缩放到符合用户期望的比例和位置后，还需要让SVG回弹到以下符合我们期望的比例和位置
+        // 经过修正后的SVG缩放比例
+        var finalScale = 1;
+        // 经过修正后的SVG中心点的横向偏移
+        var finalPosX = 0;
+        // 经过修正后的SVG中心点的纵向偏移
+        var finalPosY = 0;
+        // 上次根据用户操作进行渲染的时间戳。每次执行render()时被设置。用户的操作优先于系统的回弹修正，所以只有当前时间距离该时间戳已经过去了一段时间(200毫秒)后，我们才可以开始对SVG进行回弹修正。详见bounce()
+        var lastRenderingTime;
+
+        // 监听页面加载完成事件。为SVG加点元素以便位置参考
+        window.addEventListener("load", function() {
+            svg = document.querySelector("svg");
+
+            // 简单加一个小方块
+            let newRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+
+            newRect.setAttribute("x", "150");
+            newRect.setAttribute("y", "150");
+            newRect.setAttribute("width", "100");
+            newRect.setAttribute("height", "100");
+            newRect.setAttribute("fill", "#5cceee");
+
+            svg.appendChild(newRect);
+        });
+
+        // 根据用户的操作进行渲染
+        var render = () => {
+            // 更新渲染的时间戳
+            lastRenderingTime = new Date().getTime();
+
+            window.requestAnimationFrame(() => {
+                // 根据新的位置和缩放比例渲染SVG
+                svg.style.transform = `translate3D(${posX}px, ${posY}px, 0px) scale(${scale})`;
+
+                // 如果不想要回弹效果，以下代码可以去掉
+
+                // 让系统稍后尝试回弹修正(有必要的话)
+                setTimeout(bounce, 500);
+            });
+        };
+
+        // 如果不想要回弹效果，以下bounce()代码可以去掉
+
+        // 根据修正值回弹修正SVG
+        var bounce = () => {
+            // 用户操作后的缩放和位置没有问题，用户期望与系统期望相同，直接返回
+            if (scale == finalScale && posX == finalPosX && posY == finalPosY) return;
+
+            // 用户可能还在操作中，按优先级规则不进行系统操作，而是等待片刻再尝试
+            if (new Date().getTime() - lastRenderingTime < 200) {
+                // 等待500毫秒
+                setTimeout(bounce, 500);
+
+                // 返回
+                return;
+            }
+
+            // 容纳SVG的容器。结合SVG和容纳SVG的容器的相对位置和大小来计算回弹量
+            var ref = document.getElementById("panel_container").getBoundingClientRect();
+
+            // SVG当前的缩放比例
+            var lastScale = svg.getBoundingClientRect().width / ref.width;
+            // SVG当前的中心点横向偏移
+            var lastPosX = svg.getBoundingClientRect().x + svg.getBoundingClientRect().width / 2 - ref.width / 2;
+            // SVG当前的中心点纵向偏移
+            var lastPosY = svg.getBoundingClientRect().y + svg.getBoundingClientRect().height / 2 - ref.height / 2;
+
+            // 该次回弹的目标比例。与最终修正值差距过小则直接置为最终修正值
+            var stepScale = Math.abs(finalScale - lastScale) > 0.1 ? (lastScale + Math.sign(finalScale - lastScale) * 0.1) : finalScale;
+            // 该次回弹的目标中心点横向偏移。与最终修正值差距过小则直接置为最终修正值
+            var stepPosX = Math.abs(finalPosX - lastPosX) > 10 ? (lastPosX + (finalPosX - lastPosX) / 10 + Math.sign(finalPosX - lastPosX) * 10) : finalPosX;
+            // 该次回弹的目标中心点纵向偏移。与最终修正值差距过小则直接置为最终修正值
+            var stepPosY = Math.abs(finalPosY - lastPosY) > 10 ? (lastPosY + (finalPosY - lastPosY) / 10 + Math.sign(finalPosY - lastPosY) * 10) : finalPosY;
+
+            window.requestAnimationFrame(() => {
+                // 根据目标位置和缩放比例渲染SVG
+                svg.style.transform = `translate3D(${stepPosX}px, ${stepPosY}px, 0px) scale(${stepScale})`;
+            });
+
+            // 如果已经修正完成则返回
+            if (stepScale == finalScale && stepPosX == finalPosX && stepPosY == finalPosY) return;
+
+            // 继续尝试进行下一次修正
+            setTimeout(bounce, 500);
+        };
+
+        // 监听触控板手势事件。实际为鼠标滚轮事件
+        window.addEventListener('wheel', (e) => {
+            // 容纳SVG的容器。结合SVG和容纳SVG的容器的相对位置和大小来计算修正值
+            var ref = document.getElementById("panel_container").getBoundingClientRect();
+
+            // SVG当前的缩放比例
+            var lastScale = svg.getBoundingClientRect().width / ref.width;
+            // SVG当前的中心点横向偏移
+            var lastPosX = svg.getBoundingClientRect().x + svg.getBoundingClientRect().width / 2 - ref.width / 2;
+            // SVG当前的中心点纵向偏移
+            var lastPosY = svg.getBoundingClientRect().y + svg.getBoundingClientRect().height / 2 - ref.height / 2;
+
+            if (e.ctrlKey) {
+                // 缩放事件
+                // 根据操作确定缩放值。位置不变
+                finalScale = scale = lastScale - e.deltaY * 0.01;
+                finalPosX = posX = lastPosX;
+                finalPosY = posY = lastPosY;
+            } else {
+                // 移动事件
+                // 根据操作确定位置。缩放值不变
+                finalScale = scale = lastScale;
+                finalPosX = posX = lastPosX - e.deltaX * 2;
+                finalPosY = posY = lastPosY - e.deltaY * 2;
+            }
+
+            // 如果不想要回弹效果，以下对finalXXX的赋值可以直接修改为对XXX的赋值
+
+            // 不允许SVG过小(缩放值小于1)
+            if (scale < 1) finalScale = 1;
+            // 不允许SVG右边界进入屏幕内
+            var minPosX = ref.width / 2 - ref.width * finalScale / 2;
+            // 不允许SVG左边界进入屏幕内
+            var maxPosX = ref.width * finalScale / 2 - ref.width / 2;
+            // 不允许SVG下边界进入屏幕内
+            var minPosY = ref.height / 2 - ref.height * finalScale / 2;
+            // 不允许SVG上边界进入屏幕内
+            var maxPosY = ref.height * finalScale / 2 - ref.height / 2;
+            // 根据以上限制值确定系统最终修正值
+            if (posX < minPosX) finalPosX = minPosX;
+            if (posX > maxPosX) finalPosX = maxPosX;
+            if (posY < minPosY) finalPosY = minPosY;
+            if (posY > maxPosY) finalPosY = maxPosY;
+
+            // 根据用户操作进行渲染
+            render();
+        });
+    </script>
+</head>
+<body>
+<!-- 最外层容器 -->
+<div id='content'>
+    <!-- 放置一个固定Header为肉眼观察位移作参考 -->
+    <div id='header'>
+        Header
+    </div>
+    <!-- 容纳需要跟随手势移动的SVG的容器 -->
+    <div id='panel_container'>
+        <!-- 需要跟随手势移动的SVG -->
+        <svg></svg>
+    </div>
+    <!-- 放置一个固定Footer为肉眼观察位移作参考 -->
+    <div id='footer'>
+        Footer
+    </div>
+</div>
+</body>
+</html>
