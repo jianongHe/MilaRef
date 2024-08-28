@@ -94,8 +94,8 @@ export default {
       IPC.ipcWebviewReady(webview.getWebContentsId())
 
       webview.addEventListener('console-message', (e) => {
-        IPC.ipcDump('==========CONSOLE-MESSAGE:')
-        IPC.ipcDump(e.message)
+        // IPC.ipcDump('CONSOLE MESSAGE FROM WEBVIEW:')
+        // IPC.ipcDump(e.message)
       })
 
     });

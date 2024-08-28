@@ -38,9 +38,6 @@ export const MilaNoteStyleInjectionMixin = {
         async headerHeight() {
             const topFloat = this.menuHeight + this.headerHeight
 
-            IPC.ipcDump('TOP FLOAT CHANGE')
-            IPC.ipcDump(topFloat)
-
             this.CSSInjections[toolbarFloatingKey] = `.ToolbarContainer{position: absolute; top: ${topFloat}px;height:100%;}`
 
             await this.removeInsertedCSS(toolbarFloatingKey)

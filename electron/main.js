@@ -143,24 +143,28 @@ app.whenReady()
                 const generateCodeForListenerHeaderHeight = () => `
 (function() {
     return new Promise((resolve) => {
+    
         // 创建observer
         const observer = new MutationObserver(() => {
+        
             const header = document.querySelector('header.AppHeader');
             
             if (header) {
                 const height = header.offsetHeight;
-                console.log('old height', ${lastHeight})
-                console.log('new height', height)
-                console.log(height !== ${lastHeight})
+
                 if (height !== ${lastHeight}) {
+                
                     observer.disconnect(); // 停止当前的监听器
                     resolve(height); // 返回新的高度值
+                    
                 }
             }
+            
         });
 
         // 设置监听，观察 DOM 变化
         observer.observe(document.body, { childList: true, subtree: true });
+        
     });
 })();
                 `
@@ -185,10 +189,6 @@ app.whenReady()
                     currentWindow.webContents.send('toggle-tool-bar')
                     event.preventDefault()
                 });
-            })
-            .on('header-height-changed', (event, newHeight) => {
-                console.log('Received new header height from renderer:', newHeight);
-                // 在这里你可以执行任何需要的操作，比如保存高度值或更新UI
             })
             .on('toggle-traffic-light', (event, value) => {
                 findWindow(event).setWindowButtonVisibility(value);
@@ -226,7 +226,7 @@ app.on('window-all-closed', () => process.platform !== 'darwin' && app.quit())
             webContents.setWindowOpenHandler((details) => {
                 shell.openExternal(details.url)
 
-                return {action: 'deny'}
+                return { action: 'deny' }
             })
 
         })
