@@ -14,7 +14,7 @@ module.exports = {
       config: {
         repository: {
           owner: 'HeJiaNong',
-          name: 'WebRef'
+          name: 'MilaRef'
         },
         prerelease: false,
         draft: true

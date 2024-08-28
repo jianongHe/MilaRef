@@ -45,8 +45,8 @@ function createWindow() {
             preload: join(__dirname, 'preload.js'),
             scrollBounce: true,
             devTools: true,
-            session: session.fromPartition('persist:WebRef'),
-            partition: 'persist:WebRef',
+            session: session.fromPartition('persist:MilaRef'),
+            partition: 'persist:MilaRef',
             // nodeIntegration: true,
             // nodeIntegrationInSubFrames: true,
             // contextIsolation: false
@@ -93,7 +93,7 @@ function createWindow() {
     // }
 }
 
-app.setName('WebRef')
+app.setName('MilaRef')
 
 app.whenReady()
     .then(() => {
