@@ -1,4 +1,7 @@
 # MilaRef
+
+<img width="128" alt="milaref_logo3_256" src="https://github.com/user-attachments/assets/f2bf2747-d880-49a3-be30-d2a161097238">
+
 Enhance Milanote desktop capabilities by integrating the core features of PureRef, making Milanote a reference software.
 
 ## features:
