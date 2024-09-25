@@ -77,9 +77,6 @@ function createWindow() {
         .on('focus', () => {
             window.webContents.send('on-focus');
 
-            console.log(window.id)
-            console.log('on_FOCUS')
-
             window.webContents.on('before-input-event', (event, input) => {
                 if (input.key !== 'Tab') return
                 window.webContents.send('toggle-tool-bar')
@@ -88,9 +85,6 @@ function createWindow() {
         })
         .on('blur', () => {
             window.webContents.send('on-blur');
-
-            console.log(window.id)
-            console.log('on_BLUR')
 
             window.webContents.removeAllListeners('before-input-event');
         })
