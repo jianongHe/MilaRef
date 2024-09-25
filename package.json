@@ -14,7 +14,7 @@
     "start": "electron-forge start",
     "package": "npm run build && electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish"
+    "publish": "dotenv -e .env -- electron-forge publish"
   },
   "dependencies": {
     "@electron-forge/maker-dmg": "^7.5.0",
@@ -36,6 +36,7 @@
     "@electron/fuses": "^1.8.0",
     "@vitejs/plugin-vue": "^5.1.2",
     "concurrently": "^8.2.2",
+    "dotenv-cli": "^7.4.2",
     "electron": "^31.4.0",
     "naive-ui": "^2.39.0",
     "vite": "^5.4.1"
