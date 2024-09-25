@@ -1,14 +1,13 @@
 # MilaRef
+Enhance Milanote desktop capabilities by integrating the core features of PureRef, making Milanote a reference software.
 
-
-
-features:
-- pin/unpin window
-- make the window transparent
-- support multiple windows
-- press [Tab] to hide/show the toolbar and header
-- no scroll bar
-- multiple platform support(Mac/Windows/Linux)
+## features:
+- [x] pin/unpin window
+- [x] make the window transparent
+- [x] support multiple windows
+- [x] press [Tab] to hide/show the toolbar and header
+- [x] no scroll bar
+- [ ] multiple platform support(Mac/Windows/Linux)
 
 Dev:
 ```shell
