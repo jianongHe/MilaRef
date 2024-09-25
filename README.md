@@ -15,6 +15,9 @@ npm run start-dev
 ```
 
 Build:
+
+This command will build packages inside of `out` folder
+
 ```shell
 npm run package
 ```
