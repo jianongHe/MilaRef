@@ -7,6 +7,10 @@ const toolbarFloatingKey = Symbol()
 const viewportKey = Symbol()
 const toolbarAnimationKey = Symbol()
 const headerAnimationKey = Symbol()
+const unsortedPositionKey = Symbol()
+const unsortedAnimationKey = Symbol()
+const unsortedPanelKey = Symbol()
+const hideUnsortedKey = Symbol()
 
 export const MilaNoteStyleInjectionMixin = {
     data() {
@@ -21,6 +25,10 @@ export const MilaNoteStyleInjectionMixin = {
                 [headerAnimationKey]: 'header.AppHeader{transition:all ease 0.3s;}',
                 [headerFloatingKey]: 'header.AppHeader{position: absolute; top: 30px; width: 100%;}',
                 [toolbarFloatingKey]: '.ToolbarContainer{position: absolute; top: 114px;height:100%;}',
+                [unsortedPositionKey]: '.InboxClosed{position: absolute;top: 20px !important;',
+                [unsortedAnimationKey]: '.InboxClosed{transition: top,opacity 0.3s ease !important;} .inbox-header{transition: padding-top 0.3s ease !important;}',
+                [unsortedPanelKey]: '.inbox-header{padding-top: 0px}',
+                [hideUnsortedKey]: '.InboxClosed{opacity: 0;pointer-events: none;}'
             },
             insertedCSSKeys: {}
         };
@@ -31,17 +39,26 @@ export const MilaNoteStyleInjectionMixin = {
                 this.insertCSS(hideHeaderKey)
                 this.insertCSS(hideToolbarKey)
             } else {
-                this.removeInsertedCSS(hideHeaderKey)
-                this.removeInsertedCSS(hideToolbarKey)
+                this.removeCSS(hideHeaderKey)
+                this.removeCSS(hideToolbarKey)
             }
+
+            this.correctUnsortedPosition()
         },
-        async headerHeight() {
-            const topFloat = this.menuHeight + this.headerHeight
+        isWindowFocused(focused) {
+            console.log('focused')
+            console.log(focused)
+            focused ? this.removeCSS(hideUnsortedKey) : this.insertCSS(hideUnsortedKey)
+        },
+        async headerHeight(headerHeight) {
 
-            this.CSSInjections[toolbarFloatingKey] = `.ToolbarContainer{position: absolute; top: ${topFloat}px;height:100%;}`
-
-            await this.removeInsertedCSS(toolbarFloatingKey)
+            const toolbarTopFloat = this.menuHeight + headerHeight
+            this.CSSInjections[toolbarFloatingKey] = `.ToolbarContainer{position: absolute; top: ${toolbarTopFloat}px;height:100%;}`
+            await this.removeCSS(toolbarFloatingKey)
             await this.insertCSS(toolbarFloatingKey)
+
+            await this.correctUnsortedPosition()
+
         },
         webview(hasWebview) {
             if (!hasWebview) return
@@ -53,6 +70,10 @@ export const MilaNoteStyleInjectionMixin = {
             !this.insertedCSSKeys[headerAnimationKey] && this.insertCSS(headerAnimationKey)
             !this.insertedCSSKeys[headerFloatingKey] && this.insertCSS(headerFloatingKey)
             !this.insertedCSSKeys[toolbarFloatingKey] && this.insertCSS(toolbarFloatingKey)
+            !this.insertedCSSKeys[unsortedPositionKey] && this.insertCSS(unsortedPositionKey)
+            !this.insertedCSSKeys[unsortedAnimationKey] && this.insertCSS(unsortedAnimationKey)
+            !this.insertedCSSKeys[unsortedPanelKey] && this.insertCSS(unsortedPanelKey)
+            // !this.insertedCSSKeys[hideUnsortedKey] && this.insertCSS(hideUnsortedKey)
         }
     },
     mounted() {
@@ -65,9 +86,23 @@ export const MilaNoteStyleInjectionMixin = {
         async insertCSS(key) {
             this.insertedCSSKeys[key] = this.insertedCSSKeys[key] || await this.webview?.insertCSS(this.CSSInjections[key])
         },
-        async removeInsertedCSS(key) {
+        async removeCSS(key) {
             await this.webview?.removeInsertedCSS(this.insertedCSSKeys[key])
             this.insertedCSSKeys[key] = null
         },
+        async correctUnsortedPosition() {
+            const unsortedTopFloat = this.showToolBar
+                ? this.menuHeight
+                : this.menuHeight + this.headerHeight
+
+            this.CSSInjections[unsortedPositionKey] = `.InboxClosed{position: absolute;top: ${unsortedTopFloat + 20}px !important;`
+            await this.removeCSS(unsortedPositionKey)
+            await this.insertCSS(unsortedPositionKey)
+
+            this.CSSInjections[unsortedPanelKey] = `.inbox-header{padding-top: ${unsortedTopFloat}px}`
+            await this.removeCSS(unsortedPanelKey)
+            await this.insertCSS(unsortedPanelKey)
+
+        }
     }
 };

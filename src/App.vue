@@ -71,6 +71,7 @@ export default {
       debounce: null,
       isFullScreen: false,
       transparent: 100,
+      isWindowFocused: false
     }
   },
   computed: {
@@ -100,6 +101,10 @@ export default {
 
     });
 
+  },
+  created() {
+    IPC.ipcOnFocus(() => this.isWindowFocused = true)
+    IPC.ipcOnBlur(() => this.isWindowFocused = false)
   },
   methods: {
 

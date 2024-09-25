@@ -11,5 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcToggleTrafficLight: (flag) => ipcRenderer.send('toggle-traffic-light', flag),
     ipcOnToggleToolBar: (callback) => ipcRenderer.on('toggle-tool-bar', (_event, value) => callback(value)),
     ipcOnHeaderHeightChanged: (callback) => ipcRenderer.on('change-header-height', (_event, value) => callback(value)),
+    ipcOnFocus: (callback) => ipcRenderer.on('on-focus', (_event) => callback()),
+    ipcOnBlur: (callback) => ipcRenderer.on('on-blur', (_event) => callback()),
     ipcWebviewReady: (id) => ipcRenderer.send('webview-ready', id),
 })

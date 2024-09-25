@@ -1,5 +1,21 @@
-# Vue 3 + Vite
+# MilaRef
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+
+features:
+- pin/unpin window
+- make the window transparent
+- support multiple windows
+- press [Tab] to hide/show the toolbar and header
+- no scroll bar
+- multiple platform support(Mac/Windows/Linux)
+
+Dev:
+```shell
+npm run start-dev
+```
+
+Build:
+```shell
+npm run package
+```
