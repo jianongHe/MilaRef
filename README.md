@@ -12,6 +12,9 @@ Enhance Milanote desktop capabilities by integrating the core features of PureRe
 - [x] no scroll bar
 - [ ] multiple platform support(Mac/Windows/Linux)
 
+<img width="1016" alt="image" src="https://github.com/user-attachments/assets/d2aa2596-3813-4967-8817-9549afa528c0">
+
+
 Dev:
 ```shell
 npm run start-dev
@@ -24,3 +27,4 @@ This command will build packages inside of `out` folder
 ```shell
 npm run package
 ```
+
