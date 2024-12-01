@@ -12,7 +12,11 @@ Enhance Milanote desktop capabilities by integrating the core features of PureRe
 - [x] no scroll bar
 - [x] multiple platform support(Mac/Windows/Linux)
 
-<img width="1016" alt="image" src="https://github.com/user-attachments/assets/d2aa2596-3813-4967-8817-9549afa528c0">
+Examples: 
+
+![1201-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/dc94e1b3-9c9e-4de6-98ea-69893ab88206)
+
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/d2aa2596-3813-4967-8817-9549afa528c0">
 
 
 Dev:
