@@ -6,7 +6,7 @@ module.exports = {
     name: 'MilaRef',
     asar: true,
     appCategoryType: 'public.app-category.productivity',
-    icon: './electron/assets/logo-256x256.icns',
+    icon: process.platform === 'win32' ? './electron/assets/logo.ico' : './electron/assets/logo-256x256.icns',
   },
   rebuildConfig: {},
   publishers: [
@@ -26,7 +26,8 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        name: 'MilaRef'
+        name: 'MilaRef',
+        icon: './electron/assets/logo.ico',
       }
     },
     {
