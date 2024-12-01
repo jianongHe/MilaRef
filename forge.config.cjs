@@ -27,6 +27,7 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'MilaRef',
+        authors: 'jianong',
         icon: './electron/assets/logo.ico',
       }
     },

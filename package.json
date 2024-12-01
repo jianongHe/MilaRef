@@ -1,6 +1,7 @@
 {
   "name": "milaref",
   "description": "Float and pin the Milanote app(inspired by PureRef)",
+  "author": "jianong",
   "private": true,
   "version": "0.0.0",
   "type": "module",
