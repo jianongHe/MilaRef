@@ -34,6 +34,8 @@ npm run package
 
 Release:
 
+> Notice: need to run these commands on both Mac and Windows to generate install packages for all platforms
+
 ```shell
 # Build the vite app
 npm run package
