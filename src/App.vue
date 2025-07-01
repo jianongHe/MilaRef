@@ -10,7 +10,7 @@
             <svg-icon class="icon" name="minimize" />
           </div>
           <div class="button" v-if="!isFullScreen" @click="handleMaximize">
-            <svg-icon  class="icon to-full" name="to-full" />
+            <svg-icon class="icon to-full" name="to-full" />
           </div>
           <div class="button" v-else @click="handleMaximize">
             <svg-icon v-if="isFullScreen" class="icon to-win" name="to-win" />
@@ -19,6 +19,17 @@
             <svg-icon class="icon pin" name="pin" />
           </div>
           <div class="button" v-else @click="handlePin">
+            <svg-icon class="icon pin" name="pin_slash" />
+          </div>
+          <div class="button" v-if="!ignoreMouse" @click="handleIgnoreMouse">
+            <svg-icon class="icon pin" name="pin" />
+          </div>
+          <div class="button"
+               v-else
+               @click="handleIgnoreMouse"
+               @mouseenter="handleMouseEnterTheIgnore"
+               @mouseleave="handleMouseLeaveTheIgnore"
+          >
             <svg-icon class="icon pin" name="pin_slash" />
           </div>
           <div class="slider">
@@ -65,13 +76,15 @@ export default {
       menuHeight: 30,
       webview: null,
       pin: false,
+      ignoreMouse: false,
       touchingMenu: false,
       url: 'https://app.milanote.com',
       mouseListener: null,
       debounce: null,
       isFullScreen: false,
       transparent: 100,
-      isWindowFocused: false
+      isWindowFocused: false,
+      touchingIgnore: false
     }
   },
   computed: {
@@ -160,7 +173,42 @@ export default {
       this.pin = !this.pin
       IPC.ipcPinWindow(this.pin)
     },
+    async handleIgnoreMouse() {
+      this.ignoreMouse = !this.ignoreMouse
+      if (this.ignoreMouse) {
+        const section = await IPC.ipcGetMenuSection(this.menuHeight)
+        const rect = {
+          x: 0,
+          y: 0,
+          width: section.xEnd - section.xStart,
+          height: section.yEnd - section.yStart
+        }
 
+        IPC.ipcSetClickThroughShape(true, [rect])
+      } else {
+        IPC.ipcSetClickThroughShape(false, [])
+      }
+    },
+    handleMouseEnterTheIgnore() {
+      IPC.ipcDump('mouse enter the ignore icon')
+
+      if(!this.ignoreMouse) {
+        return
+      }
+
+      this.touchingIgnore = true
+      setTimeout(() => {
+        if (this.touchingIgnore && this.ignoreMouse) {
+          IPC.ipcDump('Not ignore now')
+
+          this.handleIgnoreMouse()
+        }
+      }, 1000)
+
+    },
+    handleMouseLeaveTheIgnore() {
+      this.touchingIgnore = false
+    }
   },
 }
 </script>

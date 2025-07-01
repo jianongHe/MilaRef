@@ -134,6 +134,37 @@ app.whenReady()
             }
         })
 
+        ipcMain.handle('toggle-ignore-mouse', (event, shouldIgnoreMouse, rects) => {
+            const win = BrowserWindow.fromWebContents(event.sender)
+            if (!win) return
+
+            console.log('shouldIgnoreMouse', shouldIgnoreMouse)
+            console.log('rects', rects)
+            if (shouldIgnoreMouse) {
+                console.log('set shape', rects)
+                win.setShape(rects)
+                win.setIgnoreMouseEvents(true, { forward: true })
+            } else {
+                win.setIgnoreMouseEvents(false)
+            }
+        })
+
+        ipcMain.handle('set-ignore-mouse-events', (event, ignore) => {
+            const win = BrowserWindow.fromWebContents(event.sender)
+            console.log('win win win', win)
+            console.log('ignore ignore ignore', ignore)
+            if (!win) return
+
+
+            // 允许穿透点击（但仍允许拖动窗口）
+            win.setIgnoreMouseEvents(ignore, { forward: true })
+        })
+
+        ipcMain.handle('get-window-bounds', (event) => {
+            const win = BrowserWindow.fromWebContents(event.sender)
+            return win.getBounds()
+        })
+
         ipcMain
             .on('dump', (event, value) => {
                 console.log(value)
