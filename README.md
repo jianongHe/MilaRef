@@ -19,7 +19,19 @@ Examples:
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/d2aa2596-3813-4967-8817-9549afa528c0">
 
 
-Dev:
+Issues:
+
+if you encounter this issue on Mac
+
+<img width="200" alt="image" src="https://github.com/user-attachments/assets/31fbe136-c506-436f-acfb-59213a47c7b0">
+
+please run the below command to trust it
+
+```shell
+xattr -cr /Applications/MilaRef.app
+```
+
+## Dev:
 ```shell
 npm run start-dev
 ```
