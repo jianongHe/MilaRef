@@ -3,7 +3,7 @@
   "description": "Float and pin the Milanote app(inspired by PureRef)",
   "author": "jianong",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
