@@ -35,7 +35,12 @@ npm run package
 Release:
 
 ```shell
+# Build the vite app
+npm run package
+
+# Generate dmg / exe / zip files
 npm run make
 
+# Release to github
 npm run publish
 ```
