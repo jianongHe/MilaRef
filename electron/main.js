@@ -134,15 +134,11 @@ app.whenReady()
             }
         })
 
-        ipcMain.handle('toggle-ignore-mouse', (event, shouldIgnoreMouse, rects) => {
+        ipcMain.handle('toggle-ignore-mouse', (event, shouldIgnoreMouse) => {
             const win = BrowserWindow.fromWebContents(event.sender)
             if (!win) return
 
-            console.log('shouldIgnoreMouse', shouldIgnoreMouse)
-            console.log('rects', rects)
             if (shouldIgnoreMouse) {
-                console.log('set shape', rects)
-                win.setShape(rects)
                 win.setIgnoreMouseEvents(true, { forward: true })
             } else {
                 win.setIgnoreMouseEvents(false)

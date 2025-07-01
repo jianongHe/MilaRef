@@ -183,19 +183,7 @@ export default {
     },
     async handleIgnoreMouse() {
       this.ignoreMouse = !this.ignoreMouse
-      if (this.ignoreMouse) {
-        const section = await IPC.ipcGetMenuSection(this.menuHeight)
-        const rect = {
-          x: 0,
-          y: 0,
-          width: section.xEnd - section.xStart,
-          height: section.yEnd - section.yStart
-        }
-
-        IPC.ipcSetClickThroughShape(true, [rect])
-      } else {
-        IPC.ipcSetClickThroughShape(false, [])
-      }
+      IPC.ipcSetClickThroughShape(this.ignoreMouse)
     },
     handleMouseEnterTheIgnore() {
       IPC.ipcDump('mouse enter the ignore icon')

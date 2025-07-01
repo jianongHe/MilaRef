@@ -14,5 +14,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcOnFocus: (callback) => ipcRenderer.on('on-focus', (_event) => callback()),
     ipcOnBlur: (callback) => ipcRenderer.on('on-blur', (_event) => callback()),
     ipcWebviewReady: (id) => ipcRenderer.send('webview-ready', id),
-    ipcSetClickThroughShape: (enable, rects) => ipcRenderer.invoke('toggle-ignore-mouse', enable, rects),
+    ipcSetClickThroughShape: (enable) => ipcRenderer.invoke('toggle-ignore-mouse', enable),
 })
