@@ -2,7 +2,7 @@
   <div ref="view" class="container">
     <div class="menu" :class="{touchingMenu, showToolBar: !showToolBar}" :style="{height: `${menuHeight}px`}" ref="menu" @mouseenter="handleMouseEnterMenu" @mouseleave="handleMouseLeaveMenu">
       <div class="bar">
-        <div class="operations">
+        <div class="operations" :class="{ignoring: ignoreMouse}">
           <div class="button" @click="handleClose">
             <svg-icon class="icon" name="close" />
           </div>
@@ -21,23 +21,30 @@
           <div class="button" v-else @click="handlePin">
             <svg-icon class="icon pin" name="pin_slash" />
           </div>
-          <div class="button" v-if="!ignoreMouse" @click="handleIgnoreMouse">
-            <svg-icon class="icon pin" name="pin" />
-          </div>
-          <div class="button"
-               v-else
-               @click="handleIgnoreMouse"
-               @mouseenter="handleMouseEnterTheIgnore"
-               @mouseleave="handleMouseLeaveTheIgnore"
-          >
-            <svg-icon class="icon pin" name="pin_slash" />
-          </div>
           <div class="slider">
             <n-slider :tooltip="false" v-model:value="transparent">
               <template #thumb>
                 <svg-icon class="icon opacity" name="opacity" />
               </template>
             </n-slider>
+          </div>
+          <div v-if="pin && transparent < 100">
+            <div class="button mouse" v-if="!ignoreMouse" @click="handleIgnoreMouse">
+              <svg-icon class="icon mouse" name="mouse-ignore" />
+            </div>
+            <div
+              v-else
+              class="button mouse"
+              :class="{ 'with-progress': touchingIgnore }"
+              @click="handleIgnoreMouse"
+              @mouseenter="handleMouseEnterTheIgnore"
+              @mouseleave="handleMouseLeaveTheIgnore"
+            >
+              <svg-icon class="icon mouse" name="mouse-normal" />
+              <svg v-if="touchingIgnore" class="progress-ring" viewBox="0 0 40 40">
+                <circle class="progress-path" cx="20" cy="20" r="19" fill="none" />
+              </svg>
+            </div>
           </div>
         </div>
         <div class="draggable"></div>
@@ -84,7 +91,8 @@ export default {
       isFullScreen: false,
       transparent: 100,
       isWindowFocused: false,
-      touchingIgnore: false
+      touchingIgnore: false,
+      ignoreTimeout: null
     }
   },
   computed: {
@@ -191,24 +199,31 @@ export default {
     },
     handleMouseEnterTheIgnore() {
       IPC.ipcDump('mouse enter the ignore icon')
-
-      if(!this.ignoreMouse) {
-        return
-      }
+      if (!this.ignoreMouse) return
 
       this.touchingIgnore = true
-      setTimeout(() => {
+
+      // 清除之前的定时器，避免重复触发
+      if (this.ignoreTimeout) {
+        clearTimeout(this.ignoreTimeout)
+      }
+
+      this.ignoreTimeout = setTimeout(() => {
         if (this.touchingIgnore && this.ignoreMouse) {
           IPC.ipcDump('Not ignore now')
-
           this.handleIgnoreMouse()
         }
+        this.ignoreTimeout = null
       }, 1000)
-
     },
+
     handleMouseLeaveTheIgnore() {
       this.touchingIgnore = false
-    }
+      if (this.ignoreTimeout) {
+        clearTimeout(this.ignoreTimeout)
+        this.ignoreTimeout = null
+      }
+    },
   },
 }
 </script>
@@ -284,6 +299,9 @@ export default {
           &.pin {
             transform: scale(0.7);
           }
+          &.mouse {
+            transform: scale(0.8);
+          }
           &.opacity {
             width: 20px;
             height: 20px;
@@ -320,6 +338,10 @@ export default {
           &:hover::before {
             opacity: 1;
           }
+
+          .with-progress {
+            position: relative;
+          }
         }
 
         .slider {
@@ -328,6 +350,17 @@ export default {
             background-color: #888888;
           }
         }
+      }
+
+      .operations.ignoring > .button {
+        opacity: 0.3;
+      }
+      .operations.ignoring > .slider {
+        opacity: 0.3;
+      }
+
+      .operations.ignoring > .button.mouse, .operations.ignoring > .slider.mouse {
+        opacity: 1;
       }
 
       .draggable {
@@ -372,6 +405,28 @@ export default {
   .webview {
     height: 100vh;
     width: 100vw;
+  }
+}
+
+.progress-ring {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 24px;
+  height: 24px;
+  transform: rotate(-90deg); /* 从顶部开始 */
+  pointer-events: none;
+}
+.progress-path {
+  stroke: white;
+  stroke-width: 1;
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: progress-ring-fill 1s linear forwards;
+}
+@keyframes progress-ring-fill {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 </style>
