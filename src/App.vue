@@ -28,7 +28,7 @@
               </template>
             </n-slider>
           </div>
-          <div v-if="pin && transparent < 100">
+          <div>
             <div class="button mouse" v-if="!ignoreMouse" @click="handleIgnoreMouse">
               <svg-icon class="icon mouse" name="mouse-ignore" />
             </div>
@@ -183,6 +183,13 @@ export default {
     },
     async handleIgnoreMouse() {
       this.ignoreMouse = !this.ignoreMouse
+
+      if(this.ignoreMouse) {
+        this.transparent = this.transparent === 100 ? 90 : this.transparent
+
+        !this.pin && this.handlePin()
+      }
+
       IPC.ipcSetClickThroughShape(this.ignoreMouse)
     },
     handleMouseEnterTheIgnore() {

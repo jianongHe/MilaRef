@@ -10,6 +10,7 @@ Enhance Milanote desktop capabilities by integrating the core features of PureRe
 - [x] support multiple windows
 - [x] press [Tab] to hide/show the toolbar and header
 - [x] no scroll bar
+- [x] Click-through mode
 - [x] multiple platform support(Mac/Windows/Linux)
 
 Examples: 
